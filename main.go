@@ -25,12 +25,15 @@ type SystemInfo struct {
 
 // systemInfoHandler returns modified system information
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
 	info, err := getSystemInfo()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Printf("original info: %+v", info)
 	overrideSystemInfo(info)
+	log.Printf("modified info: %+v", info)
 	if err := json.NewEncoder(w).Encode(info); err != nil {
 		log.Printf("failed to respond with system information")
 	}
@@ -77,6 +80,7 @@ func lookupEnv(key string, defaultVal string) string {
 
 func main() {
 	flag.Parse()
+
 	http.HandleFunc(route, systemInfoHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
